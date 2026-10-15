@@ -1,7 +1,8 @@
 // swift-tools-version: 6.0
-// Platform-neutral domain logic: aggregation, insights, model contract.
-// No HealthKit or SwiftUI imports, so it runs under `swift test` on macOS and
-// documents the logic an Android port (Kotlin) would mirror.
+// InsightCore: platform-neutral domain logic (aggregation, insights, model
+// contract). InsightPresentation: view models and display formatting (MVVM).
+// Neither imports HealthKit or SwiftUI, so both run under `swift test` on
+// macOS and document the logic an Android port (Kotlin) would mirror.
 import PackageDescription
 
 let package = Package(
@@ -9,9 +10,12 @@ let package = Package(
     platforms: [.iOS(.v17), .macOS(.v14)],
     products: [
         .library(name: "InsightCore", targets: ["InsightCore"]),
+        .library(name: "InsightPresentation", targets: ["InsightPresentation"]),
     ],
     targets: [
         .target(name: "InsightCore"),
+        .target(name: "InsightPresentation", dependencies: ["InsightCore"]),
         .testTarget(name: "InsightCoreTests", dependencies: ["InsightCore"]),
+        .testTarget(name: "InsightPresentationTests", dependencies: ["InsightPresentation", "InsightCore"]),
     ]
 )
