@@ -6,8 +6,15 @@
 	objectVersion = 110;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		AA00000000000000000000A3 /* InsightCore in Frameworks */ = {isa = PBXBuildFile; productRef = AA00000000000000000000A2 /* InsightCore */; };
+		AA00000000000000000000A8 /* InsightPresentation in Frameworks */ = {isa = PBXBuildFile; productRef = AA00000000000000000000A7 /* InsightPresentation */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		4D646BBE30817816009D7BB2 /* RezilientHealth.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RezilientHealth.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA00000000000000000000A4 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
+		AA00000000000000000000A6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -22,6 +29,8 @@
 		4D646BBB30817816009D7BB2 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
+				AA00000000000000000000A3 /* InsightCore in Frameworks */,
+				AA00000000000000000000A8 /* InsightPresentation in Frameworks */,
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -30,6 +39,7 @@
 		4D646BB530817816009D7BB2 = {
 			isa = PBXGroup;
 			children = (
+				AA00000000000000000000A5 /* Config */,
 				4D646BC030817816009D7BB2 /* RezilientHealth */,
 				4D646BBF30817816009D7BB2 /* Products */,
 			);
@@ -41,6 +51,15 @@
 				4D646BBE30817816009D7BB2 /* RezilientHealth.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		AA00000000000000000000A5 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				AA00000000000000000000A4 /* Base.xcconfig */,
+				AA00000000000000000000A6 /* Info.plist */,
+			);
+			path = Config;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -60,6 +79,10 @@
 				4D646BC030817816009D7BB2 /* RezilientHealth */,
 			);
 			name = RezilientHealth;
+			packageProductDependencies = (
+				AA00000000000000000000A2 /* InsightCore */,
+				AA00000000000000000000A7 /* InsightPresentation */,
+			);
 			productName = RezilientHealth;
 			productReference = 4D646BBE30817816009D7BB2 /* RezilientHealth.app */;
 			productType = "com.apple.product-type.application";
@@ -88,6 +111,9 @@
 			);
 			mainGroup = 4D646BB530817816009D7BB2;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				AA00000000000000000000A1 /* XCLocalSwiftPackageReference "Packages/InsightCore" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 4D646BBF30817816009D7BB2 /* Products */;
 			projectDirPath = "";
@@ -238,14 +264,20 @@
 		};
 		4D646BCA30817817009D7BB2 /* Debug configuration for PBXNativeTarget "RezilientHealth" */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = AA00000000000000000000A4 /* Base.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = RezilientHealth/RezilientHealth.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 7GR7A27J66;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Config/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Rezilient;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Rezilient reads your steps, sleep, and resting heart rate to show trends and answer your questions. A daily summary is sent to an AI service only when you ask a question.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Debug builds can write synthetic sample data so the app can be demonstrated on a simulator.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -270,14 +302,20 @@
 		};
 		4D646BCB30817817009D7BB2 /* Release configuration for PBXNativeTarget "RezilientHealth" */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = AA00000000000000000000A4 /* Base.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = RezilientHealth/RezilientHealth.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 7GR7A27J66;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Config/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Rezilient;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Rezilient reads your steps, sleep, and resting heart rate to show trends and answer your questions. A daily summary is sent to an AI service only when you ask a question.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Debug builds can write synthetic sample data so the app can be demonstrated on a simulator.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -320,6 +358,24 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		AA00000000000000000000A1 /* XCLocalSwiftPackageReference "Packages/InsightCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/InsightCore;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AA00000000000000000000A2 /* InsightCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = InsightCore;
+		};
+		AA00000000000000000000A7 /* InsightPresentation */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = InsightPresentation;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 4D646BB630817816009D7BB2 /* Project object */;
 	validationLevel = 1;
