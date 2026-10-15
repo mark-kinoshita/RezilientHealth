@@ -1,0 +1,9 @@
+# Xcode
+xcuserdata/
+DerivedData/
+*.xcuserstate
+.build/
+.swiftpm/
+
+# Local secrets (copy Config/Secrets.example.xcconfig -> Config/Secrets.xcconfig)
+Config/Secrets.xcconfig

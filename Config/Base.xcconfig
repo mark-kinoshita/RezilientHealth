@@ -1,0 +1,8 @@
+// Shared build settings for the app target.
+// The Gemini key is NOT committed. Create Config/Secrets.xcconfig from
+// Config/Secrets.example.xcconfig. Without it the app falls back to the
+// clearly-labeled simulated model.
+GEMINI_API_KEY =
+GEMINI_MODEL = gemini-flash-latest
+
+#include? "Secrets.xcconfig"
