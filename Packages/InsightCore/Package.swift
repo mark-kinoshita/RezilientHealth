@@ -12,5 +12,6 @@ let package = Package(
     ],
     targets: [
         .target(name: "InsightCore"),
+        .testTarget(name: "InsightCoreTests", dependencies: ["InsightCore"]),
     ]
 )
