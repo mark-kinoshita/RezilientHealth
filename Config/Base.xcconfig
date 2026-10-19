@@ -4,5 +4,8 @@
 // clearly-labeled simulated model.
 GEMINI_API_KEY =
 GEMINI_MODEL = gemini-flash-latest
+GEMINI_THINKING_BUDGET = 0
+GEMINI_ALTERNATE_MODELS =
+ASSISTANT_PROVIDER =
 
 #include? "Secrets.xcconfig"

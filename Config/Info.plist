@@ -6,5 +6,16 @@
 	<string>$(GEMINI_API_KEY)</string>
 	<key>GeminiModel</key>
 	<string>$(GEMINI_MODEL)</string>
+	<key>GeminiAlternateModels</key>
+	<string>$(GEMINI_ALTERNATE_MODELS)</string>
+	<key>GeminiThinkingBudget</key>
+	<string>$(GEMINI_THINKING_BUDGET)</string>
+	<key>AssistantProvider</key>
+	<string>$(ASSISTANT_PROVIDER)</string>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>LaunchBackground</string>
+	</dict>
 </dict>
 </plist>

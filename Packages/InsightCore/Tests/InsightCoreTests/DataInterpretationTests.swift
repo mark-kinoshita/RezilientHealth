@@ -16,7 +16,7 @@ import Testing
         #expect(insight.recent.daysWithData == 5)
         #expect(insight.recent.daysInPeriod == 7)
         #expect(insight.change == 2000)
-        #expect(Fixture.context(for: Fixture.snapshot(steps: steps)).metrics["steps"]?.previous7Days.average == 6000)
+        #expect(Fixture.context(for: Fixture.snapshot(steps: steps)).metrics["steps"]?.previousPeriod.average == 6000)
 
         let series = Fixture.snapshot(steps: steps).series(.steps)
         #expect(series.days.first { $0.day == Fixture.day(-5) }?.value == nil)
@@ -64,6 +64,26 @@ import Testing
 
         #expect(insight.isStale)
         #expect(insight.status == .insufficientData) // 2 of last 7 days
+    }
+
+    @Test func monthRangeComparesThirtyDaysAndNeedsHalfOfThem() {
+        // 14 days of data in the last 30: enough for a week view, not a month.
+        let steps = Dictionary(uniqueKeysWithValues: (-14 ... -1).map { ($0, 9000.0) })
+        let raw = RawHealthData(
+            dailySteps: Dictionary(uniqueKeysWithValues: steps.map { (Fixture.day($0.key), $0.value) }),
+            latestSampleDate: [.steps: Fixture.now]
+        )
+        let month = SnapshotBuilder.build(raw: raw, access: .requested, now: Fixture.now, calendar: Fixture.calendar, range: .month)
+        let insight = InsightEngine.insights(for: month).first { $0.metric == .steps }!
+
+        #expect(month.series(.steps).days.count == 61)          // 30 + 30 + today
+        #expect(insight.recent.daysInPeriod == 30)
+        #expect(insight.recent.daysWithData == 14)
+        #expect(insight.recent.minimumDaysWithData == 15)
+        #expect(insight.status == .insufficientData)
+
+        let week = InsightEngine.insights(for: Fixture.snapshot(steps: steps)).first { $0.metric == .steps }!
+        #expect(week.status == .ok)
     }
 
     @Test func overlappingSleepSourcesAreMergedAndOnlyAsleepStagesCount() {

@@ -11,10 +11,12 @@ let package = Package(
     products: [
         .library(name: "InsightCore", targets: ["InsightCore"]),
         .library(name: "InsightPresentation", targets: ["InsightPresentation"]),
+        .executable(name: "evaluate-insights", targets: ["InsightEvaluation"]),
     ],
     targets: [
         .target(name: "InsightCore"),
         .target(name: "InsightPresentation", dependencies: ["InsightCore"]),
+        .executableTarget(name: "InsightEvaluation", dependencies: ["InsightCore"]),
         .testTarget(name: "InsightCoreTests", dependencies: ["InsightCore"]),
         .testTarget(name: "InsightPresentationTests", dependencies: ["InsightPresentation", "InsightCore"]),
     ]
