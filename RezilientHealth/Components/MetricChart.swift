@@ -57,10 +57,15 @@ struct MetricChart: View {
                 RuleMark(y: .value("Average", average))
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
                     .foregroundStyle(card.metric.tint.opacity(0.7))
+                    .zIndex(1)
                     .annotation(position: .top, alignment: .trailing, spacing: 2) {
                         Text(label)
                             .font(.caption2.weight(.semibold))
+                            .monospacedDigit()
                             .foregroundStyle(card.metric.tint)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 3)
+                            .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 5))
                     }
                     .accessibilityHidden(true)
             }
@@ -147,7 +152,7 @@ struct MetricChart: View {
     private var yDomain: ClosedRange<Double> {
         let values = card.chart.compactMap(\.value)
         guard let low = values.min(), let high = values.max() else { return 0...1 }
-        if card.chartIncludesZero { return 0...max(high, card.targetLine ?? 0) * 1.15 }
+        if card.chartIncludesZero { return 0...max(1, max(high, card.targetLine ?? 0)) * 1.15 }
         return (low - 8)...(high + 8)
     }
 

@@ -28,6 +28,72 @@ import Testing
         #expect(card.chart.last?.accessibilityValue == "1,200 steps so far today")
     }
 
+    @Test func zeroStepBaselineShowsAnAbsoluteIncreaseAndBothZerosStayFlat() {
+        for current in [0.0, 5000.0] {
+            let steps = Dictionary(uniqueKeysWithValues: (-14 ... -1).map { ($0, $0 < -7 ? 0.0 : current) })
+            let snapshot = Fixture.snapshot(steps: steps)
+            let presented = card(snapshot, .steps)
+            let answerRow = AnswerMetricPresenter.rows(keys: ["steps"], context: Fixture.context(for: snapshot)).first!
+            #expect(presented.delta?.direction == (current == 0 ? .flat : .up))
+            #expect(presented.delta?.direction == answerRow.direction)
+            if current > 0 {
+                #expect(presented.delta?.text == "5,000 steps/day")
+                #expect(presented.detail.contains("Up 5,000 steps/day from 0"))
+                #expect(!presented.detail.contains("%"))
+            }
+        }
+    }
+
+    @Test func smallChangesHaveTheSameDirectionInDetailAndChat() {
+        let steps = Dictionary(uniqueKeysWithValues: (-14 ... -1).map { ($0, $0 < -7 ? 8000.0 : 8200.0) })
+        let heartRate = Dictionary(uniqueKeysWithValues: (-14 ... -1).map { ($0, $0 < -7 ? 58.0 : 58.6) })
+        let sleep = (-14 ... -1).map { day in
+            SleepInterval(start: Fixture.day(day), end: Fixture.day(day).addingTimeInterval(day < -7 ? 8 * 3600 : 7 * 3600 + 50 * 60), stage: .asleepCore)
+        }
+        let snapshot = Fixture.snapshot(steps: steps, restingHR: heartRate, sleep: sleep)
+        let rows = AnswerMetricPresenter.rows(keys: HealthMetric.allCases.map(\.rawValue), context: Fixture.context(for: snapshot))
+        for row in rows {
+            #expect(card(snapshot, row.metric).delta?.direction == row.direction)
+            #expect(row.direction != .flat)
+        }
+        #expect(card(snapshot, .sleep).delta?.text == "10m")
+        #expect(card(snapshot, .restingHeartRate).delta?.text == "1 bpm")
+    }
+
+    @Test func minuteBoundaryRoundingMatchesTheDashboardAndChat() {
+        let sleep = (-14 ... -1).map { day in
+            SleepInterval(start: Fixture.day(day), end: Fixture.day(day).addingTimeInterval((day < -7 ? 8 : 7.008) * 3600), stage: .asleepCore)
+        }
+        let snapshot = Fixture.snapshot(sleep: sleep)
+        let context = Fixture.context(for: snapshot)
+        let row = AnswerMetricPresenter.rows(keys: ["sleep"], context: context).first!
+        #expect(card(snapshot, .sleep).value == "7h 0m")
+        #expect(row.value == card(snapshot, .sleep).value)
+        #expect(row.changeText == card(snapshot, .sleep).delta?.text)
+    }
+
+    @Test func overviewChartsUseTheExactCompletedComparisonWindowForEveryMetricAndRange() {
+        let steps = Dictionary(uniqueKeysWithValues: (-180 ... 0).map { (Fixture.day($0), $0 == 0 ? 99999.0 : 8000.0) })
+        let heartRate = Dictionary(uniqueKeysWithValues: (-180 ... 0).map { (Fixture.day($0), 60.0) })
+        let sleep = (-180 ... 0).map { day in
+            SleepInterval(start: Fixture.day(day), end: Fixture.day(day).addingTimeInterval((day == 0 ? 10 : 7) * 3600), stage: .asleepCore)
+        }
+        let raw = RawHealthData(dailySteps: steps, sleepIntervals: sleep, dailyRestingHeartRate: heartRate,
+                                latestSampleDate: [.steps: Fixture.now, .sleep: Fixture.now, .restingHeartRate: Fixture.now])
+        for range in TimeRange.allCases {
+            let snapshot = SnapshotBuilder.build(raw: raw, access: .requested, now: Fixture.now, calendar: Fixture.calendar, range: range)
+            for metric in HealthMetric.allCases {
+                let presented = card(snapshot, metric)
+                #expect(presented.comparisonChart.count == range.days)
+                #expect(presented.comparisonChart.first?.day == Fixture.day(-range.days))
+                #expect(presented.comparisonChart.last?.day == Fixture.day(-1))
+                #expect(presented.chart.last?.day == Fixture.day(0))
+                let values = presented.comparisonChart.compactMap(\.value)
+                #expect(values.reduce(0, +) / Double(values.count) == presented.averageLine)
+            }
+        }
+    }
+
     @Test func noDataNeverReadsAsInactivity() {
         let card = card(Fixture.snapshot(access: .requested), .steps)
         #expect(card.isHeadlineMuted)
@@ -43,6 +109,15 @@ import Testing
         #expect(card.value == "—" && card.statusLine == "Not enough data")
         #expect(card.isStale)
         #expect(card.detail.contains("Last recorded"))
+    }
+
+    @Test func sufficientButOldDataKeepsItsAverageAndFreshnessWarning() {
+        let steps = Dictionary(uniqueKeysWithValues: (-14 ... -3).map { ($0, 9000.0) })
+        let presented = card(Fixture.snapshot(steps: steps, latest: [.steps: Fixture.day(-3)]), .steps)
+        #expect(presented.value == "9,000")
+        #expect(presented.statusLine == nil)
+        #expect(presented.isStale)
+        #expect(presented.detail.contains("Last recorded"))
     }
 
     @Test func modelContextQuotesTheSameFiguresAsTheDashboard() {

@@ -5,6 +5,15 @@ import Testing
 /// Protects the question flow's grounding and failure contract.
 @Suite struct AskBehaviorTests {
 
+    @Test func missingNewContractFieldsAndNumericObservationsAreRejected() async {
+        let oldShape = #"{"status":"answered","observations":[],"general_info":[],"limitations":[]}"#
+        let numericProse = #"{"status":"answered","takeaway":"Your activity changed.","display_metrics":["steps"],"observations":[{"text":"Your steps averaged 999999.","metrics":["steps"]}],"general_info":[],"limitations":[]}"#
+        for json in [oldShape, numericProse] {
+            let result = await InsightAssistant(client: ScriptedClient(.success(json))).ask("What changed?", context: Fixture.stepsOnlyContext)
+            #expect(result == .failure(.unreadableResponse))
+        }
+    }
+
     @Test func freeTextReplyIsNeverShownAsAnAnswer() async {
         let client = ScriptedClient(.success("Sure! Your steps look great this week."))
         let result = await InsightAssistant(client: client).ask("How am I doing?", context: Fixture.stepsOnlyContext)
@@ -17,7 +26,7 @@ import Testing
         let answer = InsightAnswer(
             status: .answered,
             observations: [
-                .init(text: "You averaged 8,000 steps a day.", metrics: ["steps"]),
+                .init(text: "Your recorded activity was steady.", metrics: ["steps"]),
                 .init(text: "Your sleep improved.", metrics: ["sleep"]),
                 .init(text: "You seem stressed.", metrics: []),
             ],

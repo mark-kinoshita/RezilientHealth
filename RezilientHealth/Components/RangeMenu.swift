@@ -24,6 +24,7 @@ struct RangeMenu: View {
                     .foregroundStyle(.secondary)
             }
             .font(.subheadline.weight(.semibold))
+            .fixedSize()
         }
         .buttonStyle(.glass)
         .controlSize(.small)

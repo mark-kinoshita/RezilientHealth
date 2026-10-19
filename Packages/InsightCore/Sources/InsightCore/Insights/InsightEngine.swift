@@ -45,17 +45,17 @@ public enum InsightEngine {
     public static let sleepTargetHours = 7.0
 
     public static func insights(for snapshot: HealthSnapshot) -> [MetricInsight] {
-        HealthMetric.allCases.map { insight(for: snapshot.series($0), now: snapshot.generatedAt, range: snapshot.range) }
+        MetricCatalog.enabled.map { insight(for: snapshot.series($0), now: snapshot.generatedAt, range: snapshot.range) }
     }
 
-    /// The days in the current period: completed days only for accumulating
-    /// metrics (today's partial total would drag the average down).
+    /// All metrics use the same completed calendar days. Today remains visible
+    /// in charts, but even last night's sleep is excluded from comparisons.
     public static func currentDays(of series: MetricSeries, range: TimeRange) -> [DailyValue] {
-        Array(series.days.filter { !$0.isPartial }.suffix(range.days))
+        Array(series.days.dropLast().suffix(range.days))
     }
 
     public static func periods(for series: MetricSeries, range: TimeRange) -> (recent: PeriodStats, prior: PeriodStats) {
-        let completed = series.days.filter { !$0.isPartial }
+        let completed = series.days.dropLast()
         let recent = Array(completed.suffix(range.days))
         let prior = Array(completed.dropLast(range.days).suffix(range.days))
         return (stats(recent, minimum: range.minimumDaysWithData), stats(prior, minimum: range.minimumDaysWithData))

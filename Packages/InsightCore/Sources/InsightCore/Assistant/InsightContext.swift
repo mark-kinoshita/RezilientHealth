@@ -61,6 +61,8 @@ public struct InsightContext: Codable, Sendable, Equatable {
     public let accessNote: String
     public let metrics: [String: Metric]
     public let notTrackedInThisApp: [String]
+    /// Same on-device facts used by the dashboard narrative.
+    public let dashboardPatterns: PatternSummary
 
     public static let notTracked = [
         "heart_rate_variability", "workouts", "calories", "blood_pressure",
@@ -81,16 +83,45 @@ public struct InsightContext: Codable, Sendable, Equatable {
             value.status == .noData ? nil : HealthMetric(rawValue: key)
         })
     }
+
+    /// Smaller model input, while the UI retains the original captured context.
+    /// Period facts stay intact for retained metrics; pattern selection follows that scope.
+    public func withoutDailyReadings(keeping relevant: Set<HealthMetric>? = nil) -> InsightContext {
+        let selected = metrics.filter { key, _ in
+            guard let relevant else { return true }
+            guard let metric = HealthMetric(rawValue: key) else { return false }
+            return relevant.contains(metric)
+        }
+        let patterns = relevant.map { relevant in
+            PatternSummary(
+                changes: dashboardPatterns.changes.filter { relevant.contains($0.metric) },
+                comparableMetrics: selected.values.filter { $0.currentPeriod.sufficient && $0.previousPeriod.sufficient && !$0.stale }.count,
+                sleepSpread: relevant.contains(.sleep) ? dashboardPatterns.sleepSpread : nil
+            )
+        } ?? dashboardPatterns
+        return Self(
+            generatedAt: generatedAt,
+            window: .init(start: window.start, end: window.end, timezone: window.timezone,
+                          periodDays: window.periodDays,
+                          note: window.note + " Daily readings are omitted for this provider. Metrics may be scoped to this question; omitted metrics do not mean missing recordings. Do not infer daily trends or specific-day values; use only the supplied period summaries and dashboard_patterns."),
+            healthAccess: healthAccess, accessNote: accessNote,
+            metrics: selected.mapValues { metric in
+                Metric(unit: metric.unit, status: metric.status, lastSampleAt: metric.lastSampleAt,
+                       stale: metric.stale, currentPeriod: metric.currentPeriod,
+                       previousPeriod: metric.previousPeriod, daily: [])
+            },
+            notTrackedInThisApp: notTrackedInThisApp, dashboardPatterns: patterns
+        )
+    }
 }
 
 public enum InsightContextBuilder {
     /// Round the way the dashboard displays each metric, so the model quotes
-    /// the same figures: whole steps and bpm; sleep hours to 2 decimals
-    /// (accurate to the minute).
+    /// the same figures: whole steps and bpm; sleep hours to the nearest minute.
     static func rounded(_ value: Double, for metric: HealthMetric) -> Double {
         switch metric {
         case .steps, .restingHeartRate: value.rounded()
-        case .sleep: (value * 100).rounded() / 100
+        case .sleep: (value * 60).rounded() / 60
         }
     }
 
@@ -148,12 +179,13 @@ public enum InsightContextBuilder {
                 end: dayFormatter.string(from: snapshot.generatedAt),
                 timezone: calendar.timeZone.identifier,
                 periodDays: snapshot.range.days,
-                note: "The member is viewing \(snapshot.range.currentLabel), compared with \(snapshot.range.previousLabel). current_period and previous_period summarize those. Daily values are calendar-day totals (sleep: the night ending that morning). Today is in progress for steps and resting heart rate and is not in either period."
+                note: "The member is viewing \(snapshot.range.currentLabel), compared with \(snapshot.range.previousLabel). current_period and previous_period summarize those. Daily values are calendar-day totals (sleep: the night ending that morning). Today is not in either comparison period for any metric; its daily values are shown separately. Steps and resting heart rate are still in progress."
             ),
             healthAccess: snapshot.access,
             accessNote: accessNote,
             metrics: metrics,
-            notTrackedInThisApp: InsightContext.notTracked
+            notTrackedInThisApp: InsightContext.notTracked,
+            dashboardPatterns: PatternSummary.build(snapshot: snapshot, insights: insights)
         )
     }
 }

@@ -42,9 +42,8 @@ nonisolated final class HealthKitDataSource: HealthDataSource, @unchecked Sendab
         async let latestSleep = latestSampleDate(Self.sleepType)
 
         return try await RawHealthData(
-            dailySteps: steps,
+            dailyValues: [.steps: steps, .restingHeartRate: restingHR],
             sleepIntervals: sleep,
-            dailyRestingHeartRate: restingHR,
             latestSampleDate: [.steps: latestSteps, .restingHeartRate: latestHR, .sleep: latestSleep].compactMapValues { $0 }
         )
     }

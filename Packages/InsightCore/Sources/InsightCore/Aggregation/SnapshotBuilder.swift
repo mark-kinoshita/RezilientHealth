@@ -14,7 +14,7 @@ public enum SnapshotBuilder {
     public static func days(in window: DateInterval, calendar: Calendar) -> [Date] {
         var days: [Date] = []
         var day = calendar.startOfDay(for: window.start)
-        while day < window.end {
+        while day <= window.end {
             days.append(day)
             day = calendar.date(byAdding: .day, value: 1, to: day)!
         }
@@ -53,11 +53,10 @@ public enum SnapshotBuilder {
             window: window,
             range: range,
             access: access,
-            series: [
-                .steps: series(.steps, raw.dailySteps),
-                .sleep: series(.sleep, sleepByDay),
-                .restingHeartRate: series(.restingHeartRate, raw.dailyRestingHeartRate),
-            ]
+            series: Dictionary(uniqueKeysWithValues: MetricCatalog.enabled.map { metric in
+                let values = metric == .sleep ? sleepByDay : raw.dailyValues(for: metric)
+                return (metric, series(metric, values))
+            })
         )
     }
 }

@@ -8,6 +8,10 @@ import InsightPresentation
 /// tagged with this app as the source and can be removed with `clear()`.
 nonisolated struct SampleDataSeeder: SampleDataSeeding {
     enum Scenario: String, CaseIterable, Identifiable {
+        /// The demo: six steady months, then a rough last week (less sleep,
+        /// higher resting HR, fewer steps, one missed night) seeded through
+        /// this morning, so every card shows a real change and nothing is stale.
+        case story
         /// Six months (enough to compare 3 months with the 3 before) with
         /// realistic gaps: a week the watch wasn't worn, scattered missing
         /// days and nights, overlapping watch + phone sleep samples, and a
@@ -19,6 +23,7 @@ nonisolated struct SampleDataSeeder: SampleDataSeeding {
         var id: String { rawValue }
         var title: String {
             switch self {
+            case .story: "Seed demo story (rough last week)"
             case .typical: "Seed typical 6 months (with gaps)"
             case .sparseAndStale: "Seed sparse + stale data"
             }
@@ -43,7 +48,7 @@ nonisolated struct SampleDataSeeder: SampleDataSeeding {
         var samples: [HKSample] = []
         let today = calendar.startOfDay(for: now)
 
-        let firstOffset = scenario == .typical ? -180 : -14
+        let firstOffset = scenario == .sparseAndStale ? -14 : -180
         for offset in firstOffset...0 {
             let day = calendar.date(byAdding: .day, value: offset, to: today)!
             // 0 at the oldest day, 1 at today: drives a gradual trend.
@@ -56,16 +61,24 @@ nonisolated struct SampleDataSeeder: SampleDataSeeding {
                 let missedDay = [-5, -4, -23, -61, -97, -130].contains(offset)
                 let missedNight = [-2, -9, -33, -74, -118].contains(offset)
                 include = (!watchOff && !missedDay, !watchOff && !missedDay, !watchOff && !missedNight)
+            case .story:
+                let watchOff = (-52 ... -46).contains(offset)
+                let missedDay = [-23, -61, -97, -130].contains(offset)
+                let missedNight = [-3, -33, -74, -118].contains(offset)    // -3: one gap inside the rough week
+                include = (!watchOff && !missedDay, !watchOff && !missedDay, !watchOff && !missedNight)
             case .sparseAndStale:
                 include = (offset <= -9, offset <= -11, [-13, -10].contains(offset))
             }
+            let level = levels(scenario, offset: offset, progress: progress)
+            // Quieter noise in the last two weeks so the week-over-week change reads clearly.
+            let noise = scenario == .story && offset >= -14 ? 0.4 : 1.0
 
             if include.steps {
-                let base = 6_000 + 2_600 * progress + (weekend ? -900 : 0)
-                samples += stepSamples(day: day, total: base + Double.random(in: -1_400...1_400, using: &rng), now: now)
+                let base = level.steps + (weekend ? -900 : 0)
+                samples += stepSamples(day: day, total: base + noise * Double.random(in: -1_400...1_400, using: &rng), now: now)
             }
             if include.hr, let at = calendar.date(bySettingHour: 7, minute: 30, second: 0, of: day), at < now {
-                let bpm = 62 - 4 * progress + Double.random(in: -1.5...1.5, using: &rng)
+                let bpm = level.bpm + noise * Double.random(in: -1.5...1.5, using: &rng)
                 samples.append(HKQuantitySample(
                     type: HealthKitDataSource.restingHRType,
                     quantity: HKQuantity(unit: .count().unitDivided(by: .minute()), doubleValue: bpm.rounded()),
@@ -73,11 +86,23 @@ nonisolated struct SampleDataSeeder: SampleDataSeeding {
                 ))
             }
             if include.sleep {
-                let hours = 7.4 - 0.5 * progress + (weekend ? 0.4 : 0) + Double.random(in: -0.6...0.6, using: &rng)
+                let hours = level.sleep + (weekend ? 0.4 : 0) + noise * Double.random(in: -0.6...0.6, using: &rng)
                 samples += sleepSamples(wakeDay: day, hoursAsleep: hours, overlapSource: offset.isMultiple(of: 3), now: now)
             }
         }
         try await store.save(samples)
+    }
+
+    /// Typical daily steps, resting bpm, and hours asleep before noise.
+    private func levels(_ scenario: Scenario, offset: Int, progress: Double) -> (steps: Double, bpm: Double, sleep: Double) {
+        switch scenario {
+        case .story:
+            // The rough week covers the last 7 days and today, so it fills the
+            // current period whether or not today's sleep is averaged.
+            offset >= -7 ? (6_500, 62, 6.45) : (8_200, 58, 7.3)
+        case .typical, .sparseAndStale:
+            (6_000 + 2_600 * progress, 62 - 4 * progress, 7.4 - 0.5 * progress)
+        }
     }
 
     /// Deletes only samples this app wrote.

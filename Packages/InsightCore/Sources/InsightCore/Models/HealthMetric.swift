@@ -29,3 +29,10 @@ public enum HealthMetric: String, CaseIterable, Codable, Sendable, Identifiable 
     /// the day; "today's" sleep is last night, which has already ended.
     public var todayIsComplete: Bool { self == .sleep }
 }
+
+/// The active metric set is deliberately separate from the metric cases.
+/// Product can hide or swap supported metrics here without changing dashboard
+/// iteration, insight generation, or the model response schema.
+public enum MetricCatalog {
+    public static let enabled: [HealthMetric] = [.steps, .sleep, .restingHeartRate]
+}

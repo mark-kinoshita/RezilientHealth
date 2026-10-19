@@ -8,6 +8,9 @@ public struct AnsweredQuestion: Sendable, Equatable {
     public let isSimulated: Bool
     /// Exactly what was sent, for the "what the AI saw" disclosure.
     public let contextJSON: String
+    public let context: InsightContext
+    public var history: [ConversationTurn] = []
+    public var modelInput: String? = nil
 }
 
 public enum AskFailure: Error, Equatable, Sendable {
@@ -19,6 +22,8 @@ public enum AskFailure: Error, Equatable, Sendable {
     /// The model replied, but not in the agreed shape. We never show raw text.
     case unreadableResponse
     case noHealthData
+    case modelUnavailable(reason: String)
+    case contextLimit
 
     public var message: String {
         switch self {
@@ -29,13 +34,15 @@ public enum AskFailure: Error, Equatable, Sendable {
         case .blocked: "The assistant couldn't answer that question."
         case .unreadableResponse: "The assistant's reply couldn't be checked against your data, so it isn't shown."
         case .noHealthData: "Your health data hasn't loaded yet."
+        case .modelUnavailable(let reason): reason
+        case .contextLimit: "This model can't fit the current question and context. Start a new question or choose another model."
         }
     }
 
     public var isRetryable: Bool {
         switch self {
         case .timeout, .offline, .serviceUnavailable, .unreadableResponse: true
-        case .notConfigured, .blocked, .noHealthData: false
+        case .notConfigured, .blocked, .noHealthData, .modelUnavailable, .contextLimit: false
         }
     }
 
@@ -47,6 +54,8 @@ public enum AskFailure: Error, Equatable, Sendable {
         case .blocked: self = .blocked
         case .emptyResponse: self = .unreadableResponse
         case .http, .transport: self = .serviceUnavailable
+        case .unavailable(let reason): self = .modelUnavailable(reason: reason)
+        case .contextLimit: self = .contextLimit
         }
     }
 }
@@ -61,23 +70,25 @@ public struct InsightAssistant: Sendable {
         self.timeout = timeout
     }
 
-    public func ask(_ question: String, context: InsightContext) async -> Result<AnsweredQuestion, AskFailure> {
-        let contextJSON = context.jsonString()
+    public func ask(_ question: String, context: InsightContext, history: [ConversationTurn] = []) async -> Result<AnsweredQuestion, AskFailure> {
+        let inputContext = client.inputPolicy.prepare(context, question: question)
+        let contextJSON = inputContext.jsonString()
 
         // Possible emergencies never wait on (or depend on) a network model.
         if QuestionTriage.isPossibleEmergency(question) {
             return .success(AnsweredQuestion(
                 question: question, answer: QuestionTriage.emergencyAnswer, removedStatements: 0,
-                sourceLabel: "Built-in safety message (no AI)", isSimulated: false, contextJSON: contextJSON
+                sourceLabel: "Built-in safety message (no AI)", isSimulated: false, contextJSON: contextJSON, context: context
             ))
         }
 
         let request = ModelRequest(
-            systemInstruction: InsightPrompt.systemInstruction,
-            userMessage: InsightPrompt.userMessage(question: question, context: context),
-            context: context,
+            systemInstruction: InsightPrompt.instructions(for: client.promptStyle),
+            userMessage: InsightPrompt.userMessage(question: question, context: inputContext, history: history),
+            context: inputContext,
             question: question,
-            timeout: timeout
+            timeout: timeout,
+            history: Array(history.suffix(3))
         )
 
         let raw: String
@@ -88,7 +99,7 @@ public struct InsightAssistant: Sendable {
         }
 
         guard let decoded = try? InsightAnswer.decode(raw),
-              let checked = try? AnswerValidator.validate(decoded, context: context)
+              let checked = try? AnswerValidator.validate(decoded, context: inputContext)
         else {
             return .failure(.unreadableResponse)
         }
@@ -96,7 +107,9 @@ public struct InsightAssistant: Sendable {
 
         return .success(AnsweredQuestion(
             question: question, answer: validated, removedStatements: removed,
-            sourceLabel: client.sourceLabel, isSimulated: client.isSimulated, contextJSON: contextJSON
+            sourceLabel: client.sourceLabel, isSimulated: client.isSimulated, contextJSON: contextJSON, context: context,
+            history: Array(history.suffix(3)),
+            modelInput: "INSTRUCTIONS:\n\(request.systemInstruction)\n\n\(request.userMessage)"
         ))
     }
 }

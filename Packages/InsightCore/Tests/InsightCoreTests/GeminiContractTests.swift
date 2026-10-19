@@ -6,7 +6,7 @@ import Testing
 
     @Test func extractsJSONFromGenerateContentEnvelope() throws {
         let envelope = #"""
-        {"candidates":[{"content":{"role":"model","parts":[{"text":"{\"status\":\"insufficient_data\",\"observations\":[],\"general_info\":[],\"limitations\":[\"This app doesn't have blood pressure data.\"]}"}]},"finishReason":"STOP"}]}
+        {"candidates":[{"content":{"role":"model","parts":[{"text":"{\"status\":\"insufficient_data\",\"takeaway\":\"Here is what the available data shows.\",\"display_metrics\":[],\"observations\":[],\"general_info\":[],\"limitations\":[\"This app doesn't have blood pressure data.\"]}"}]},"finishReason":"STOP"}]}
         """#
         let text = try GeminiClient.parse(data: Data(envelope.utf8), status: 200)
         let answer = try InsightAnswer.decode(text)
@@ -38,11 +38,14 @@ import Testing
         let config = try #require(body["generationConfig"] as? [String: Any])
         #expect(config["responseMimeType"] as? String == "application/json")
         #expect((config["thinkingConfig"] as? [String: Any])?["thinkingBudget"] as? Int == 0)
-        #expect(config["responseSchema"] != nil)
+        let schema = try #require(config["responseSchema"] as? [String: Any])
+        let required = try #require(schema["required"] as? [String])
+        #expect(required.contains("takeaway"))
+        #expect(required.contains("display_metrics"))
     }
 
     @Test func capacityErrorIsRetriedOnceThenSucceeds() async throws {
-        let valid = #"{"candidates":[{"content":{"parts":[{"text":"{\"status\":\"answered\",\"observations\":[{\"text\":\"You averaged 8,000 steps.\",\"metrics\":[\"steps\"]}],\"general_info\":[],\"limitations\":[]}"}]}}]}"#
+        let valid = #"{"candidates":[{"content":{"parts":[{"text":"{\"status\":\"answered\",\"takeaway\":\"Here is what the available data shows.\",\"display_metrics\":[\"steps\"],\"observations\":[{\"text\":\"Your recorded activity was steady.\",\"metrics\":[\"steps\"]}],\"general_info\":[],\"limitations\":[]}"}]}}]}"#
         let busy = #"{"error":{"code":503,"message":"This model is currently experiencing high demand."}}"#
         let responses = Responses([(503, busy), (200, valid)])
         let client = GeminiClient(apiKey: "k", model: "m", retryDelay: .zero) { request in
@@ -52,6 +55,16 @@ import Testing
         let answered = try await InsightAssistant(client: client).ask("How active was I?", context: Fixture.stepsOnlyContext).get()
         #expect(answered.answer.observations.count == 1)
         #expect(await responses.served == 2)
+    }
+
+    @Test func thinkingConfigurationCanBeOmittedForOtherModels() throws {
+        let client = GeminiClient(apiKey: "test", model: "another-model", thinkingBudget: nil)
+        let request = ModelRequest(systemInstruction: InsightPrompt.systemInstruction, userMessage: "test",
+                                   context: Fixture.stepsOnlyContext, question: "test", timeout: 20)
+        let body = try #require(JSONSerialization.jsonObject(with: client.makeURLRequest(request).httpBody!) as? [String: Any])
+        let config = try #require(body["generationConfig"] as? [String: Any])
+        #expect(config["thinkingConfig"] == nil)
+        #expect(config["responseSchema"] != nil)
     }
 
     @Test func persistentCapacityErrorFailsWithoutAnAnswer() async {

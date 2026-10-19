@@ -22,7 +22,7 @@ public struct MetricCardState: Sendable, Equatable, Identifiable {
     public struct Delta: Sendable, Equatable {
         public enum Direction: Sendable, Equatable { case up, down, flat }
         public let direction: Direction
-        /// "35%", "25m", "3 bpm", or "No change"
+        /// "35%", "5,000 steps/day", "25m", "3 bpm", or "Same"
         public let text: String
         public let accessibilityText: String
     }
@@ -57,6 +57,8 @@ public struct MetricCardState: Sendable, Equatable, Identifiable {
     public let stats: [Stat]
     /// Current period plus today; empty when there's nothing to chart.
     public let chart: [ChartPoint]
+    /// The same completed days used for the average, excluding today for every metric.
+    public var comparisonChart: [ChartPoint] { Array(chart.dropLast()) }
     /// Sleep draws a dashed target line at this value.
     public let targetLine: Double?
     public let targetLabel: String?

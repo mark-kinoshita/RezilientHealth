@@ -53,7 +53,7 @@ enum MetricCardPresenter {
             coverageNote: insight.status == .noData ? nil
                 : "Based on \(recent.daysWithData) of \(recent.daysInPeriod) days (\(format.range(recent))). "
                     + "Days with no data are left out, not counted as zero."
-                    + (metric.todayIsComplete ? "" : " Today is still in progress and isn't included."),
+                    + " Today is shown separately and isn't included in comparisons.",
             stats: stats(insight, range: range, format: format),
             chart: chartDays.contains { $0.value != nil } ? chartDays.map { point($0, metric: metric, format: format) } : [],
             targetLine: metric == .sleep ? InsightEngine.sleepTargetHours : nil,
@@ -79,23 +79,31 @@ enum MetricCardPresenter {
         }
     }
 
-    /// Thresholds below which a change is reported as "no change".
-    private static func isFlat(_ change: Double, prior: Double, metric: HealthMetric) -> Bool {
-        switch metric {
-        case .steps: prior > 0 ? abs(change / prior) < 0.05 : true
-        case .sleep: abs(change) < 0.25
-        case .restingHeartRate: abs(change) < 2
+    /// Match the displayed endpoints; product thresholds only select summary stories.
+    private static func displayedChange(_ insight: MetricInsight) -> Double? {
+        guard insight.change != nil, let current = insight.recent.average, let prior = insight.prior.average else { return nil }
+        if insight.metric == .sleep {
+            return ((current * 60).rounded() - (prior * 60).rounded()) / 60
         }
+        return current.rounded() - prior.rounded()
+    }
+
+    private static func stepChangeText(_ change: Double, prior: Double, format: DisplayFormatter) -> String {
+        // A zero baseline has no percentage change. Tiny percentages are clearer as counts.
+        guard prior.rounded() > 0, abs(change / prior.rounded() * 100) >= 1 else {
+            return "\(format.int(abs(change))) steps/day"
+        }
+        return "\(format.int(abs(change / prior.rounded() * 100)))%"
     }
 
     private static func delta(_ insight: MetricInsight, format: DisplayFormatter, range: TimeRange) -> MetricCardState.Delta? {
-        guard let change = insight.change, let prior = insight.prior.average else { return nil }
-        if isFlat(change, prior: prior, metric: insight.metric) {
-            return .init(direction: .flat, text: "No change", accessibilityText: "About the same as \(range.previousLabel)")
+        guard let change = displayedChange(insight), let prior = insight.prior.average else { return nil }
+        if change == 0 {
+            return .init(direction: .flat, text: "Same", accessibilityText: "The same displayed average as \(range.previousLabel)")
         }
         let direction: MetricCardState.Delta.Direction = change > 0 ? .up : .down
         let text: String = switch insight.metric {
-        case .steps: "\(format.int(abs(change / prior * 100)))%"
+        case .steps: stepChangeText(change, prior: prior, format: format)
         case .sleep: format.hours(abs(change))
         case .restingHeartRate: "\(format.int(abs(change))) bpm"
         }
@@ -128,11 +136,11 @@ enum MetricCardPresenter {
     private static func describe(_ insight: MetricInsight, range: TimeRange, format: DisplayFormatter) -> (String, String) {
         guard let average = insight.recent.average else { return ("", "") }
         let comparison: String
-        switch (insight.metric, insight.change, insight.prior.average) {
-        case (let metric, let change?, let prior?) where isFlat(change, prior: prior, metric: metric):
-            comparison = "About the same as \(range.previousLabel) (\(value(prior, metric, format)))."
+        switch (insight.metric, displayedChange(insight), insight.prior.average) {
+        case (let metric, 0?, let prior?):
+            comparison = "The same displayed average as \(range.previousLabel) (\(value(prior, metric, format)))."
         case (.steps, let change?, let prior?):
-            comparison = "\(change > 0 ? "Up" : "Down") \(format.int(abs(change / prior * 100)))% from \(format.int(prior)) in \(range.previousLabel)."
+            comparison = "\(change > 0 ? "Up" : "Down") \(stepChangeText(change, prior: prior, format: format)) from \(format.int(prior)) in \(range.previousLabel)."
         case (.sleep, let change?, let prior?):
             comparison = "\(format.hours(abs(change))) \(change > 0 ? "more" : "less") than \(range.previousLabel) (\(format.hours(prior)))."
         case (.restingHeartRate, let change?, let prior?):

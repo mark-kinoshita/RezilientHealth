@@ -88,6 +88,10 @@ struct MetricDetailView: View {
                 }
                 .padding()
                 .animation(.default, value: card)
+            } else if viewModel.isLoading {
+                ProgressView("Loading your health summary…")
+                    .frame(maxWidth: .infinity)
+                    .padding(32)
             }
         }
         .background(Color(.systemGroupedBackground))

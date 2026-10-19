@@ -5,7 +5,7 @@ import Observation
 /// A banner above the cards. The view chooses icon and color from `kind`.
 public struct DashboardNotice: Sendable, Equatable, Identifiable {
     public enum Kind: Sendable, Equatable { case error, unavailable, connect, noVisibleData }
-    public enum Action: Sendable, Equatable { case retry, connect, openSettings }
+    public enum Action: Sendable, Equatable { case retry, connect, openHealth }
 
     public let kind: Kind
     public let title: String
@@ -19,26 +19,44 @@ public struct DashboardNotice: Sendable, Equatable, Identifiable {
 public struct DashboardHeader: Sendable, Equatable {
     /// "Oct 8 – Oct 14"
     public let dateRange: String
-    /// "Compared with Oct 1 – Oct 7": the period the change chips measure against.
+    /// "vs. Oct 1 – 7": the period the change chips measure against.
     public let caption: String
 }
 
 @MainActor
 @Observable
 public final class DashboardViewModel {
-    public private(set) var isLoading = false
+    // Loading is visible before the view's first .task has a chance to run.
+    public private(set) var isLoading = true
+    public var isInitialLoading: Bool { isLoading && header == nil }
     public private(set) var header: DashboardHeader?
     public private(set) var notices: [DashboardNotice] = []
     public private(set) var cards: [MetricCardState] = []
+    public private(set) var patternSummary: PatternSummaryState?
     public private(set) var footnote: String?
     public var canAsk: Bool { ask.context != nil }
 
     public private(set) var selectedRange: TimeRange = .week
+    public var periodTitle: String {
+        switch selectedRange {
+        case .week: "Your week"
+        case .month: "Your month"
+        case .quarter: "Your last 90 days"
+        }
+    }
 
     /// Reloads with a window of two periods of the new range plus today.
     public func select(_ range: TimeRange) async {
         guard range != selectedRange else { return }
+        ask.startOver()
         selectedRange = range
+        // Don't show a previous window's values under the newly selected range.
+        header = nil
+        cards = []
+        patternSummary = nil
+        footnote = nil
+        notices = []
+        ask.context = nil
         await load()
     }
 
@@ -55,6 +73,7 @@ public final class DashboardViewModel {
     private let calendar: Calendar
     private let now: @Sendable () -> Date
     private var loadError: String?
+    private var loadID: UUID?
 
     public init(
         source: any HealthDataSource,
@@ -76,10 +95,13 @@ public final class DashboardViewModel {
     }
 
     public func load() async {
+        let id = UUID()
+        loadID = id
         isLoading = true
-        defer { isLoading = false }
+        defer { if loadID == id { isLoading = false } }
         loadError = nil
         let range = selectedRange
+        var readError: String?
         let access = await source.accessState()
         let now = now()
         var raw = RawHealthData.empty
@@ -87,11 +109,12 @@ public final class DashboardViewModel {
             do {
                 raw = try await source.fetch(window: SnapshotBuilder.window(now: now, calendar: calendar, range: range), calendar: calendar)
             } catch {
-                loadError = "Couldn't read Health data: \(error.localizedDescription)"
+                readError = "Couldn't read Health data: \(error.localizedDescription)"
             }
         }
-        // A newer range selection may have started while this one was loading.
-        guard range == selectedRange else { return }
+        // The request ID also handles Week → Month → Week and same-range refreshes.
+        guard loadID == id else { return }
+        loadError = readError
         apply(SnapshotBuilder.build(raw: raw, access: access, now: now, calendar: calendar, range: range))
     }
 
@@ -130,6 +153,7 @@ public final class DashboardViewModel {
         let context = InsightContextBuilder.build(snapshot: snapshot, insights: insights)
         let format = DisplayFormatter(calendar: calendar)
         let connected = snapshot.access == .requested && loadError == nil
+        patternSummary = connected ? PatternSummaryState.build(snapshot: snapshot, insights: insights) : nil
 
         let range = snapshot.range
         let days = SnapshotBuilder.days(in: snapshot.window, calendar: calendar).dropLast() // today is separate
@@ -137,7 +161,7 @@ public final class DashboardViewModel {
         let previous = days.dropLast(range.days).suffix(range.days)
         header = DashboardHeader(
             dateRange: "\(format.day(current.first ?? snapshot.window.start)) – \(format.day(current.last ?? snapshot.generatedAt))",
-            caption: "Compared with \(format.day(previous.first ?? snapshot.window.start)) – \(format.day(previous.last ?? snapshot.window.start))"
+            caption: "vs. \(Self.shortRange(previous.first ?? snapshot.window.start, previous.last ?? snapshot.window.start, format: format, calendar: calendar))"
         )
         cards = connected
             ? insights.map { MetricCardPresenter.card(for: $0, series: snapshot.series($0.metric), range: range, access: snapshot.access, calendar: calendar) }
@@ -149,6 +173,12 @@ public final class DashboardViewModel {
         notices = [errorNotice(), accessNotice(snapshot)].compactMap { $0 }
         // Only offer questions once Health is connected and readable.
         ask.context = connected ? context : nil
+    }
+
+    /// "Oct 4 – 10", or "Sep 28 – Oct 4" across months.
+    private static func shortRange(_ first: Date, _ last: Date, format: DisplayFormatter, calendar: Calendar) -> String {
+        let sameMonth = calendar.isDate(first, equalTo: last, toGranularity: .month)
+        return "\(format.day(first)) – \(sameMonth ? String(calendar.component(.day, from: last)) : format.day(last))"
     }
 
     private func errorNotice() -> DashboardNotice? {
@@ -164,20 +194,20 @@ public final class DashboardViewModel {
                                    message: "This device doesn't support Apple Health.", action: nil, actionTitle: nil)
         case .notDetermined:
             return DashboardNotice(kind: .connect, title: "Connect Apple Health",
-                                   message: "Rezilient reads steps, sleep, and resting heart rate to show your trends on this device. A daily summary leaves the device only when you ask a question.",
+                                   message: "Rezilient reads steps, sleep, and resting heart rate. Cloud assistants receive a summary when you ask; the on-device assistant keeps it here.",
                                    action: .connect, actionTitle: "Connect")
         case .requested:
             // On iOS, denied read access and "nothing recorded" look identical.
             let nothingVisible = snapshot.series.values.allSatisfy { !$0.hasAnyData && $0.lastSampleDate == nil }
             guard nothingVisible, loadError == nil else { return nil }
             return DashboardNotice(kind: .noVisibleData, title: "We can't see any health data",
-                                   message: "Either access is turned off, or no device has recorded anything yet. iOS doesn't tell apps which. You can check under Settings › Health › Data Access & Devices.",
-                                   action: .openSettings, actionTitle: "Open Settings")
+                                   message: "Either access is turned off, or nothing has been recorded yet. iOS doesn't tell apps which. To check, open the Health app, tap your profile picture, then Apps › Rezilient, and turn on the data types.",
+                                   action: .openHealth, actionTitle: "Open Health")
         }
     }
 
     private func applySelectedAssistant() {
         guard let option = assistantOptions.first(where: { $0.id == selectedAssistantID }) else { return }
-        ask.assistant = InsightAssistant(client: option.makeClient())
+        ask.replaceAssistant(with: InsightAssistant(client: option.makeClient()))
     }
 }

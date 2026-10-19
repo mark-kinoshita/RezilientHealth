@@ -37,24 +37,42 @@ public struct SleepInterval: Sendable, Equatable {
 /// Day keys are start-of-day in the caller's calendar. A missing key means
 /// "no samples", which is different from a recorded zero.
 public struct RawHealthData: Sendable {
-    public var dailySteps: [Date: Double]
+    /// Normalized daily values keyed by metric. Quantity-based metrics such as
+    /// steps and resting heart rate share this path; interval metrics can keep
+    /// their native samples until their own aggregator converts them.
+    public var dailyValues: [HealthMetric: [Date: Double]]
     public var sleepIntervals: [SleepInterval]
-    public var dailyRestingHeartRate: [Date: Double]
     public var latestSampleDate: [HealthMetric: Date]
 
     public init(
-        dailySteps: [Date: Double] = [:],
+        dailyValues: [HealthMetric: [Date: Double]] = [:],
+        sleepIntervals: [SleepInterval] = [],
+        latestSampleDate: [HealthMetric: Date] = [:]
+    ) {
+        self.dailyValues = dailyValues
+        self.sleepIntervals = sleepIntervals
+        self.latestSampleDate = latestSampleDate
+    }
+
+    /// Compatibility initializer for existing fixtures and data sources.
+    public init(
+        dailySteps: [Date: Double],
         sleepIntervals: [SleepInterval] = [],
         dailyRestingHeartRate: [Date: Double] = [:],
         latestSampleDate: [HealthMetric: Date] = [:]
     ) {
-        self.dailySteps = dailySteps
-        self.sleepIntervals = sleepIntervals
-        self.dailyRestingHeartRate = dailyRestingHeartRate
-        self.latestSampleDate = latestSampleDate
+        self.init(
+            dailyValues: [.steps: dailySteps, .restingHeartRate: dailyRestingHeartRate],
+            sleepIntervals: sleepIntervals,
+            latestSampleDate: latestSampleDate
+        )
     }
 
-    public static let empty = RawHealthData()
+    public func dailyValues(for metric: HealthMetric) -> [Date: Double] {
+        dailyValues[metric] ?? [:]
+    }
+
+    public static let empty = RawHealthData(dailyValues: [:])
 }
 
 /// Abstraction over the platform health store.

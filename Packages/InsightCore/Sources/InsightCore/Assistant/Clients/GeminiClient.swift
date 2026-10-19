@@ -7,11 +7,13 @@ public struct GeminiClient: InsightModelClient {
     let model: String
     let transport: Transport
     let retryDelay: Duration
+    let thinkingBudget: Int?
 
-    public init(apiKey: String, model: String, retryDelay: Duration = .seconds(1), transport: Transport? = nil) {
+    public init(apiKey: String, model: String, thinkingBudget: Int? = 0, retryDelay: Duration = .seconds(1), transport: Transport? = nil) {
         self.apiKey = apiKey
         self.model = model
         self.retryDelay = retryDelay
+        self.thinkingBudget = thinkingBudget
         self.transport = transport ?? { request in try await URLSession.shared.data(for: request) }
     }
 
@@ -57,17 +59,18 @@ public struct GeminiClient: InsightModelClient {
         urlRequest.httpMethod = "POST"
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
         urlRequest.setValue(apiKey, forHTTPHeaderField: "x-goog-api-key")
+        var generationConfig: [String: Any] = [
+            "temperature": 0.2,
+            "responseMimeType": "application/json",
+            "responseSchema": GeminiResponseSchema.responseSchema,
+        ]
+        // Not every Gemini model permits disabling thinking. Omit this option
+        // for additional model IDs unless their configuration explicitly sets it.
+        if let thinkingBudget { generationConfig["thinkingConfig"] = ["thinkingBudget": thinkingBudget] }
         let body: [String: Any] = [
             "systemInstruction": ["parts": [["text": request.systemInstruction]]],
             "contents": [["role": "user", "parts": [["text": request.userMessage]]]],
-            "generationConfig": [
-                "temperature": 0.2,
-                // Thinking took up to ~60s in testing vs ~1.5s without; the
-                // reasoning is already done on device (InsightEngine).
-                "thinkingConfig": ["thinkingBudget": 0],
-                "responseMimeType": "application/json",
-                "responseSchema": InsightPrompt.responseSchema,
-            ],
+            "generationConfig": generationConfig,
         ]
         urlRequest.httpBody = try? JSONSerialization.data(withJSONObject: body)
         return urlRequest
