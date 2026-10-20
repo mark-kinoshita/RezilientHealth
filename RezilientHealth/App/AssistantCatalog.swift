@@ -1,0 +1,41 @@
+import Foundation
+
+/// Model backends offered to the dashboard view model. Simulated modes
+/// reproduce boundary and failure behavior on demand.
+enum AssistantCatalog {
+    static let geminiID = "gemini"
+    static let appleID = "apple"
+
+    static var defaultID: String {
+        if let configured = AppConfiguration.assistantID {
+            return options.contains { $0.id == configured } ? configured : "mock"
+        }
+        return AppConfiguration.geminiAPIKey == nil ? "mock" : geminiID
+    }
+
+    static var options: [AssistantOption] {
+        let key = AppConfiguration.geminiAPIKey
+        let model = AppConfiguration.geminiModel
+        let thinkingBudget = AppConfiguration.geminiThinkingBudget
+        var seen = Set<String>()
+        let models = ([model] + AppConfiguration.alternateGeminiModels).filter { seen.insert($0).inserted }
+        let cloudOptions = models.map { selectedModel in
+            AssistantOption(id: selectedModel == model ? geminiID : "gemini:\(selectedModel)",
+                            title: "Gemini (\(selectedModel))",
+                            unavailableReason: { key == nil ? "Configure a Gemini API key to use this model." : nil }) {
+                GeminiClient(apiKey: key ?? "", model: selectedModel,
+                             thinkingBudget: selectedModel == model ? thinkingBudget : nil)
+            }
+        }
+        return cloudOptions + [
+            AssistantOption(id: appleID, title: "Apple · on-device summaries",
+                            unavailableReason: { AppleFoundationModelClient.unavailabilityReason }) {
+                AppleFoundationModelClient()
+            },
+            AssistantOption(id: "mock", title: "Simulated: normal") { MockModelClient(behavior: .normal) },
+            AssistantOption(id: "mockTimeout", title: "Simulated: timeout", isDiagnostic: true) { MockModelClient(behavior: .timeout, delay: .seconds(2)) },
+            AssistantOption(id: "mockServerError", title: "Simulated: service error", isDiagnostic: true) { MockModelClient(behavior: .serverError) },
+            AssistantOption(id: "mockMalformed", title: "Simulated: malformed reply", isDiagnostic: true) { MockModelClient(behavior: .malformed) },
+        ]
+    }
+}

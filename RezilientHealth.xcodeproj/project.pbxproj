@@ -11,8 +11,8 @@
 		4D646BBE30817816009D7BB2 /* RezilientHealth.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RezilientHealth.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA00000000000000000000A4 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
 		AA00000000000000000000A6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		AB0100000000000000000003 = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = InsightCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		AB0200000000000000000003 = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = InsightPresentationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB0100000000000000000003 = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = DomainTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB0200000000000000000003 = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = FeatureTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -21,8 +21,8 @@
 			path = RezilientHealth;
 			sourceTree = "<group>";
 		};
-		AB0100000000000000000002 = {isa = PBXFileSystemSynchronizedRootGroup; path = RezilientHealthTests/InsightCoreTests; sourceTree = "<group>"; };
-		AB0200000000000000000002 = {isa = PBXFileSystemSynchronizedRootGroup; path = RezilientHealthTests/InsightPresentationTests; sourceTree = "<group>"; };
+		AB0100000000000000000002 = {isa = PBXFileSystemSynchronizedRootGroup; path = RezilientHealthTests/DomainTests; sourceTree = "<group>"; };
+		AB0200000000000000000002 = {isa = PBXFileSystemSynchronizedRootGroup; path = RezilientHealthTests/FeatureTests; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,8 +104,8 @@
             buildRules = ();
             dependencies = (AB010000000000000000000A);
             fileSystemSynchronizedGroups = (AB0100000000000000000002);
-            name = InsightCoreTests;
-            productName = InsightCoreTests;
+            name = DomainTests;
+            productName = DomainTests;
             productReference = AB0100000000000000000003;
             productType = "com.apple.product-type.bundle.unit-test";
         };
@@ -116,8 +116,8 @@
             buildRules = ();
             dependencies = (AB020000000000000000000A);
             fileSystemSynchronizedGroups = (AB0200000000000000000002);
-            name = InsightPresentationTests;
-            productName = InsightPresentationTests;
+            name = FeatureTests;
+            productName = FeatureTests;
             productReference = AB0200000000000000000003;
             productType = "com.apple.product-type.bundle.unit-test";
         };
@@ -381,7 +381,7 @@
                 DEVELOPMENT_TEAM = 7GR7A27J66;
                 GENERATE_INFOPLIST_FILE = YES;
                 IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-                PRODUCT_BUNDLE_IDENTIFIER = com.rezilient.InsightCoreTests;
+                PRODUCT_BUNDLE_IDENTIFIER = com.rezilient.DomainTests;
                 PRODUCT_NAME = "$(TARGET_NAME)";
                 SDKROOT = iphoneos;
                 SWIFT_VERSION = 5.0;
@@ -394,7 +394,7 @@
                 DEVELOPMENT_TEAM = 7GR7A27J66;
                 GENERATE_INFOPLIST_FILE = YES;
                 IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-                PRODUCT_BUNDLE_IDENTIFIER = com.rezilient.InsightCoreTests;
+                PRODUCT_BUNDLE_IDENTIFIER = com.rezilient.DomainTests;
                 PRODUCT_NAME = "$(TARGET_NAME)";
                 SDKROOT = iphoneos;
                 SWIFT_VERSION = 5.0;
@@ -407,7 +407,7 @@
                 DEVELOPMENT_TEAM = 7GR7A27J66;
                 GENERATE_INFOPLIST_FILE = YES;
                 IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-                PRODUCT_BUNDLE_IDENTIFIER = com.rezilient.InsightPresentationTests;
+                PRODUCT_BUNDLE_IDENTIFIER = com.rezilient.FeatureTests;
                 PRODUCT_NAME = "$(TARGET_NAME)";
                 SDKROOT = iphoneos;
                 SWIFT_VERSION = 5.0;
@@ -420,7 +420,7 @@
                 DEVELOPMENT_TEAM = 7GR7A27J66;
                 GENERATE_INFOPLIST_FILE = YES;
                 IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-                PRODUCT_BUNDLE_IDENTIFIER = com.rezilient.InsightPresentationTests;
+                PRODUCT_BUNDLE_IDENTIFIER = com.rezilient.FeatureTests;
                 PRODUCT_NAME = "$(TARGET_NAME)";
                 SDKROOT = iphoneos;
                 SWIFT_VERSION = 5.0;

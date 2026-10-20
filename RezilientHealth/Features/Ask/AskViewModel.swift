@@ -2,7 +2,7 @@ import Foundation
 import Observation
 
 /// State for the Ask screen. The failure contract (never lose the question,
-/// never show an unchecked answer) is unit tested in InsightPresentationTests.
+/// never show an unchecked answer) is unit tested in FeatureTests.
 @MainActor
 @Observable
 public final class AskViewModel {
