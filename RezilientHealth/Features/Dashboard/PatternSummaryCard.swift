@@ -1,5 +1,3 @@
-import InsightCore
-import InsightPresentation
 import SwiftUI
 
 /// A quick, visual summary of the strongest fresh changes; detail remains below.

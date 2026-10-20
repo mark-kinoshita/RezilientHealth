@@ -1,5 +1,3 @@
-import InsightCore
-import InsightPresentation
 import SwiftUI
 
 /// One metric in depth: chart with axes, the numbers behind the tile, and the

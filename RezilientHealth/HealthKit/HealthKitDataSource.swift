@@ -1,9 +1,8 @@
 import Foundation
 import HealthKit
-import InsightCore
 
 /// HealthKit adapter. Does the platform-specific querying and hands
-/// platform-neutral `RawHealthData` to InsightCore.
+/// platform-neutral `RawHealthData` to the core data pipeline.
 nonisolated final class HealthKitDataSource: HealthDataSource, @unchecked Sendable {
     let store = HKHealthStore()
 

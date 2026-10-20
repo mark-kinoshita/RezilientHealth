@@ -1,6 +1,5 @@
 import Foundation
 import FoundationModels
-import InsightCore
 
 /// SDK-specific generation stays outside the platform-neutral core package.
 /// Each call uses the app's explicit, bounded history rather than hidden session memory.

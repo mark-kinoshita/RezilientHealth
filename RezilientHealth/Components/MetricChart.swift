@@ -1,6 +1,4 @@
 import Charts
-import InsightCore
-import InsightPresentation
 import SwiftUI
 
 /// Bars for totals (steps, sleep), a smoothed line with a soft area for

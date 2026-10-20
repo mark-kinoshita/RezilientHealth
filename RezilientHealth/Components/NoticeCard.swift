@@ -1,5 +1,3 @@
-import InsightCore
-import InsightPresentation
 import SwiftUI
 
 struct NoticeCard<Actions: View>: View {

@@ -13,10 +13,10 @@ This is one live sample per case per run, not proof of reliability or clinical s
 Run again with `GEMINI_API_KEY` supplied through the environment (optionally `GEMINI_MODEL`):
 
 ```sh
-swift run --package-path Packages/InsightCore evaluate-insights /tmp/rezilient-live-evaluation.json
+./Evaluation/run.sh /tmp/rezilient-live-evaluation.json
 ```
 
-This is opt-in and makes real API requests. Ordinary `swift test` runs remain offline.
+This is opt-in and makes real API requests. Ordinary Xcode test runs remain offline.
 
 ## Unedited demo walkthrough (target: 2 minutes 45 seconds)
 

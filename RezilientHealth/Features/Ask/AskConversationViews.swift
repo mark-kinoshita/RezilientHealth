@@ -1,5 +1,3 @@
-import InsightCore
-import InsightPresentation
 import SwiftUI
 
 // MARK: - Empty state

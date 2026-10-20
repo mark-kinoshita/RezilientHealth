@@ -1,7 +1,6 @@
 #if DEBUG
 import Foundation
 import HealthKit
-import InsightPresentation
 
 /// Debug-only: writes deterministic synthetic samples into HealthKit so the
 /// real read path can be demonstrated on a simulator. Everything written is

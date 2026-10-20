@@ -1,5 +1,3 @@
-import InsightCore
-import InsightPresentation
 import SwiftUI
 
 /// Renders DashboardViewModel state. No formatting or business rules here.

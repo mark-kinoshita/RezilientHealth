@@ -1,6 +1,4 @@
 import Charts
-import InsightCore
-import InsightPresentation
 import SwiftUI
 
 /// Compact dashboard tile: one number, its change, a sparkline, and coverage.

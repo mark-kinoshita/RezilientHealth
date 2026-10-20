@@ -1,6 +1,4 @@
 import Charts
-import InsightCore
-import InsightPresentation
 import SwiftUI
 
 /// Visual identity per metric (styling only).

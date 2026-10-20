@@ -1,6 +1,4 @@
 import Foundation
-import InsightCore
-import InsightPresentation
 
 /// Build-time configuration injected through Config/*.xcconfig → Info.plist.
 enum AppConfiguration {

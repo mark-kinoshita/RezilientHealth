@@ -1,4 +1,3 @@
-import InsightCore
 import SwiftUI
 
 /// Compact time-range control: a small glass pill ("Week ⌃⌄") that opens a

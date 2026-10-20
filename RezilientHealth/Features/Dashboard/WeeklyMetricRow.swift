@@ -1,6 +1,4 @@
 import Charts
-import InsightCore
-import InsightPresentation
 import SwiftUI
 
 /// Dense dashboard row; tapping it opens the existing full metric detail.

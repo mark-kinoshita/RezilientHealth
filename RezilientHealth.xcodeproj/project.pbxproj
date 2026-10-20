@@ -6,15 +6,13 @@
 	objectVersion = 110;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		AA00000000000000000000A3 /* InsightCore in Frameworks */ = {isa = PBXBuildFile; productRef = AA00000000000000000000A2 /* InsightCore */; };
-		AA00000000000000000000A8 /* InsightPresentation in Frameworks */ = {isa = PBXBuildFile; productRef = AA00000000000000000000A7 /* InsightPresentation */; };
-/* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		4D646BBE30817816009D7BB2 /* RezilientHealth.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RezilientHealth.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA00000000000000000000A4 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
 		AA00000000000000000000A6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AB0100000000000000000003 = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = InsightCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB0200000000000000000003 = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = InsightPresentationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -23,22 +21,25 @@
 			path = RezilientHealth;
 			sourceTree = "<group>";
 		};
+		AB0100000000000000000002 = {isa = PBXFileSystemSynchronizedRootGroup; path = RezilientHealthTests/InsightCoreTests; sourceTree = "<group>"; };
+		AB0200000000000000000002 = {isa = PBXFileSystemSynchronizedRootGroup; path = RezilientHealthTests/InsightPresentationTests; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		4D646BBB30817816009D7BB2 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
-				AA00000000000000000000A3 /* InsightCore in Frameworks */,
-				AA00000000000000000000A8 /* InsightPresentation in Frameworks */,
 			);
 		};
+		AB0100000000000000000005 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		AB0200000000000000000005 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		4D646BB530817816009D7BB2 = {
 			isa = PBXGroup;
 			children = (
+                AB0000000000000000000001 /* Tests */,
 				AA00000000000000000000A5 /* Config */,
 				4D646BC030817816009D7BB2 /* RezilientHealth */,
 				4D646BBF30817816009D7BB2 /* Products */,
@@ -49,6 +50,8 @@
 			isa = PBXGroup;
 			children = (
 				4D646BBE30817816009D7BB2 /* RezilientHealth.app */,
+                AB0200000000000000000003,
+                AB0100000000000000000003,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -62,6 +65,15 @@
 			path = Config;
 			sourceTree = "<group>";
 		};
+        AB0000000000000000000001 /* Tests */ = {
+            isa = PBXGroup;
+            children = (
+                AB0100000000000000000002,
+                AB0200000000000000000002,
+            );
+            name = Tests;
+            sourceTree = "<group>";
+        };
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -80,13 +92,35 @@
 			);
 			name = RezilientHealth;
 			packageProductDependencies = (
-				AA00000000000000000000A2 /* InsightCore */,
-				AA00000000000000000000A7 /* InsightPresentation */,
 			);
 			productName = RezilientHealth;
 			productReference = 4D646BBE30817816009D7BB2 /* RezilientHealth.app */;
 			productType = "com.apple.product-type.application";
 		};
+		AB0100000000000000000001 = {
+            isa = PBXNativeTarget;
+            buildConfigurationList = AB0100000000000000000007;
+            buildPhases = (AB0100000000000000000004, AB0100000000000000000005, AB0100000000000000000006);
+            buildRules = ();
+            dependencies = (AB010000000000000000000A);
+            fileSystemSynchronizedGroups = (AB0100000000000000000002);
+            name = InsightCoreTests;
+            productName = InsightCoreTests;
+            productReference = AB0100000000000000000003;
+            productType = "com.apple.product-type.bundle.unit-test";
+        };
+		AB0200000000000000000001 = {
+            isa = PBXNativeTarget;
+            buildConfigurationList = AB0200000000000000000007;
+            buildPhases = (AB0200000000000000000004, AB0200000000000000000005, AB0200000000000000000006);
+            buildRules = ();
+            dependencies = (AB020000000000000000000A);
+            fileSystemSynchronizedGroups = (AB0200000000000000000002);
+            name = InsightPresentationTests;
+            productName = InsightPresentationTests;
+            productReference = AB0200000000000000000003;
+            productType = "com.apple.product-type.bundle.unit-test";
+        };
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -112,13 +146,14 @@
 			mainGroup = 4D646BB530817816009D7BB2;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				AA00000000000000000000A1 /* XCLocalSwiftPackageReference "Packages/InsightCore" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 4D646BBF30817816009D7BB2 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
+                AB0200000000000000000001,
+                AB0100000000000000000001,
 				4D646BBD30817816009D7BB2 /* RezilientHealth */,
 			);
 		};
@@ -130,6 +165,8 @@
 			files = (
 			);
 		};
+		AB0100000000000000000006 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		AB0200000000000000000006 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -138,6 +175,8 @@
 			files = (
 			);
 		};
+		AB0100000000000000000004 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		AB0200000000000000000004 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
@@ -292,7 +331,6 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
@@ -330,7 +368,6 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
@@ -338,6 +375,58 @@
 			};
 			name = Release;
 		};
+		AB0100000000000000000008 = {isa = XCBuildConfiguration; buildSettings = {
+                BUNDLE_LOADER = "$(TEST_HOST)";
+                CODE_SIGN_STYLE = Automatic;
+                DEVELOPMENT_TEAM = 7GR7A27J66;
+                GENERATE_INFOPLIST_FILE = YES;
+                IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+                PRODUCT_BUNDLE_IDENTIFIER = com.rezilient.InsightCoreTests;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                SDKROOT = iphoneos;
+                SWIFT_VERSION = 5.0;
+                TARGETED_DEVICE_FAMILY = "1,2";
+                TEST_HOST = "$(BUILT_PRODUCTS_DIR)/RezilientHealth.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/RezilientHealth";
+            }; name = Debug; };
+		AB0100000000000000000009 = {isa = XCBuildConfiguration; buildSettings = {
+                BUNDLE_LOADER = "$(TEST_HOST)";
+                CODE_SIGN_STYLE = Automatic;
+                DEVELOPMENT_TEAM = 7GR7A27J66;
+                GENERATE_INFOPLIST_FILE = YES;
+                IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+                PRODUCT_BUNDLE_IDENTIFIER = com.rezilient.InsightCoreTests;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                SDKROOT = iphoneos;
+                SWIFT_VERSION = 5.0;
+                TARGETED_DEVICE_FAMILY = "1,2";
+                TEST_HOST = "$(BUILT_PRODUCTS_DIR)/RezilientHealth.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/RezilientHealth";
+            }; name = Release; };
+		AB0200000000000000000008 = {isa = XCBuildConfiguration; buildSettings = {
+                BUNDLE_LOADER = "$(TEST_HOST)";
+                CODE_SIGN_STYLE = Automatic;
+                DEVELOPMENT_TEAM = 7GR7A27J66;
+                GENERATE_INFOPLIST_FILE = YES;
+                IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+                PRODUCT_BUNDLE_IDENTIFIER = com.rezilient.InsightPresentationTests;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                SDKROOT = iphoneos;
+                SWIFT_VERSION = 5.0;
+                TARGETED_DEVICE_FAMILY = "1,2";
+                TEST_HOST = "$(BUILT_PRODUCTS_DIR)/RezilientHealth.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/RezilientHealth";
+            }; name = Debug; };
+		AB0200000000000000000009 = {isa = XCBuildConfiguration; buildSettings = {
+                BUNDLE_LOADER = "$(TEST_HOST)";
+                CODE_SIGN_STYLE = Automatic;
+                DEVELOPMENT_TEAM = 7GR7A27J66;
+                GENERATE_INFOPLIST_FILE = YES;
+                IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+                PRODUCT_BUNDLE_IDENTIFIER = com.rezilient.InsightPresentationTests;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                SDKROOT = iphoneos;
+                SWIFT_VERSION = 5.0;
+                TARGETED_DEVICE_FAMILY = "1,2";
+                TEST_HOST = "$(BUILT_PRODUCTS_DIR)/RezilientHealth.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/RezilientHealth";
+            }; name = Release; };
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -357,25 +446,16 @@
 			);
 			defaultConfigurationName = Release;
 		};
+		AB0100000000000000000007 = {isa = XCConfigurationList; buildConfigurations = (AB0100000000000000000008, AB0100000000000000000009); defaultConfigurationName = Release; };
+		AB0200000000000000000007 = {isa = XCConfigurationList; buildConfigurations = (AB0200000000000000000008, AB0200000000000000000009); defaultConfigurationName = Release; };
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		AA00000000000000000000A1 /* XCLocalSwiftPackageReference "Packages/InsightCore" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = Packages/InsightCore;
-		};
-/* End XCLocalSwiftPackageReference section */
+        AB010000000000000000000A = {isa = PBXTargetDependency; target = 4D646BBD30817816009D7BB2; targetProxy = AB010000000000000000000B; };
+        AB010000000000000000000B = {isa = PBXContainerItemProxy; containerPortal = 4D646BB630817816009D7BB2; proxyType = 1; remoteGlobalIDString = 4D646BBD30817816009D7BB2; remoteInfo = RezilientHealth; };
 
-/* Begin XCSwiftPackageProductDependency section */
-		AA00000000000000000000A2 /* InsightCore */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = InsightCore;
-		};
-		AA00000000000000000000A7 /* InsightPresentation */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = InsightPresentation;
-		};
-/* End XCSwiftPackageProductDependency section */
+        AB020000000000000000000A = {isa = PBXTargetDependency; target = 4D646BBD30817816009D7BB2; targetProxy = AB020000000000000000000B; };
+        AB020000000000000000000B = {isa = PBXContainerItemProxy; containerPortal = 4D646BB630817816009D7BB2; proxyType = 1; remoteGlobalIDString = 4D646BBD30817816009D7BB2; remoteInfo = RezilientHealth; };
+
 	};
 	rootObject = 4D646BB630817816009D7BB2 /* Project object */;
 	validationLevel = 1;

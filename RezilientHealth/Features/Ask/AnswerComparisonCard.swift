@@ -1,5 +1,3 @@
-import InsightCore
-import InsightPresentation
 import SwiftUI
 
 /// Static numerical evidence from the captured request, not model-generated text.

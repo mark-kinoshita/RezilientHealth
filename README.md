@@ -11,10 +11,11 @@ Requires Xcode 27 and an iOS 26 or later simulator or device. The app has no thi
 3. In the Debug build, open Developer options → **Seed demo story (rough last week)**. This writes synthetic HealthKit samples so the app exercises its real HealthKit read path. The data is not personal. **Remove seeded data** deletes only samples written by this app.
 4. Ask “Should I get more steps?” to see a live Gemini response, its separately labeled general wellness information, and locally filled metric evidence. In Ask, the CPU menu switches between available providers.
 
-Run the model and presentation tests on macOS:
+Run all model and presentation tests in Xcode with **Product → Test** (⌘U), or from the command line:
 
 ```sh
-swift test --package-path Packages/InsightCore
+xcodebuild test -project RezilientHealth.xcodeproj -scheme RezilientHealth \
+  -destination 'platform=iOS Simulator,name=iPhone 18 Pro'
 ```
 
 ### Reproduce important states
@@ -49,7 +50,7 @@ flowchart LR
 
 HealthKit provides daily quantity totals and sleep intervals. `SnapshotBuilder` creates the selected window from daily readings; missing values remain `nil`. Sleep intervals are merged before asleep duration is calculated. `InsightEngine` averages recorded completed days, requires at least half-period coverage, and compares the current period with the prior one. Today remains visible in charts but is excluded from comparisons. The dashboard builds a short pattern from qualifying changes and shows the source coverage beside them. These selection thresholds are product heuristics, not clinical cutoffs.
 
-The dashboard and Ask view models depend on protocols. HealthKit access, Gemini, Apple Foundation Models, and simulation are adapters composed in the app target. `MetricCatalog` defines the enabled metric set; metric-specific aggregation and rendering remain explicit where signals differ.
+All app code is in the app target: `Core/` contains aggregation, insights, and model contracts; `Presentation/` contains the dedicated view-model and display-state files; `Features/` contains SwiftUI screens. The two Xcode test targets preserve the core and presentation test suites. The dashboard and Ask view models depend on protocols. HealthKit access, Gemini, Apple Foundation Models, and simulation are adapters composed in the app target. `MetricCatalog` defines the enabled metric set; metric-specific aggregation and rendering remain explicit where signals differ.
 
 Each model adapter declares its execution location, input policy, and answer style. Gemini receives the dashboard summary and may return observations plus general wellness information. Apple Foundation Models receives only the relevant summary and generates a concise takeaway; the app keeps the rest on device and adds metric values and boundary notes locally. There is no silent switch from on-device to cloud. All responses use one structured contract, then the shared validator removes metric claims unsupported by the exact context sent. Values, ranges, and coverage shown in chat come from that captured local context.
 

@@ -1,4 +1,3 @@
-import InsightPresentation
 import SwiftUI
 
 @main
