@@ -4,7 +4,7 @@ A native SwiftUI iOS prototype that reads steps, sleep, and resting heart rate f
 
 ## Run
 
-Requires Xcode 27 and an iOS simulator or device. The app has no third-party runtime dependencies.
+Requires Xcode 27 and an iOS 26 or later simulator or device. The app has no third-party runtime dependencies.
 
 1. For live Gemini answers, copy `Config/Secrets.example.xcconfig` to the gitignored `Config/Secrets.xcconfig` and set `GEMINI_API_KEY`. Without a key, the app uses its simulated provider. `GEMINI_MODEL` selects the primary model; `GEMINI_ALTERNATE_MODELS` adds model choices; `ASSISTANT_PROVIDER` optionally selects `gemini`, `apple`, or `mock` at launch.
 2. Open `RezilientHealth.xcodeproj`, run the `RezilientHealth` scheme, and connect Apple Health when prompted. Apple Foundation Models requires a supported device with Apple Intelligence available.

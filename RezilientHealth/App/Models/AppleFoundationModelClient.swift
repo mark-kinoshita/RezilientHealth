@@ -48,11 +48,13 @@ nonisolated struct AppleFoundationModelClient: InsightModelClient {
     private func generate(_ request: ModelRequest) async throws -> String {
         let model = SystemLanguageModel.default
         let maximumResponseTokens = 640
-        let promptTokens = try await model.tokenCount(for: Prompt(request.userMessage))
-        let instructionTokens = try await model.tokenCount(for: Instructions(request.systemInstruction))
-        let schemaTokens = try await model.tokenCount(for: OnDeviceAnswer.generationSchema)
-        guard promptTokens + instructionTokens + schemaTokens + maximumResponseTokens + 64 < model.contextSize else {
-            throw ModelError.contextLimit
+        if #available(iOS 26.4, *) {
+            let promptTokens = try await model.tokenCount(for: Prompt(request.userMessage))
+            let instructionTokens = try await model.tokenCount(for: Instructions(request.systemInstruction))
+            let schemaTokens = try await model.tokenCount(for: OnDeviceAnswer.generationSchema)
+            guard promptTokens + instructionTokens + schemaTokens + maximumResponseTokens + 64 < model.contextSize else {
+                throw ModelError.contextLimit
+            }
         }
         try Task.checkCancellation()
         let session = LanguageModelSession(model: model, instructions: request.systemInstruction)
