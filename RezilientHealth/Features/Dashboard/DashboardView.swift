@@ -16,12 +16,21 @@ struct DashboardView: View {
             : AnyLayout(HStackLayout(alignment: .center))
     }
 
+    private var shouldShowConnectEmptyState: Bool {
+        !viewModel.isInitialLoading
+            && viewModel.cards.isEmpty
+            && viewModel.patternSummary == nil
+            && viewModel.notices.contains { $0.kind == .connect }
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     if viewModel.isInitialLoading {
                         DashboardLoadingView()
+                    } else if shouldShowConnectEmptyState {
+                        ConnectHealthEmptyState { perform(.connect) }
                     } else {
                         if let header = viewModel.header {
                             headerLayout {
