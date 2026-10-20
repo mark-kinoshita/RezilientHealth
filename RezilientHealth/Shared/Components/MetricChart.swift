@@ -1,7 +1,7 @@
 import Charts
 import SwiftUI
 
-/// Bars for totals (steps, sleep), a smoothed line with a soft area for
+/// Bars for totals (steps, sleep), a line with a soft area for
 /// resting heart rate. The full style supports scrubbing: drag or tap to see
 /// a day's value, with a haptic tick per day. Gaps stay visible as gray
 /// columns and are never bridged by the line.
@@ -167,20 +167,23 @@ struct MetricChart: View {
                 yEnd: .value(card.metric.unit, value),
                 series: .value("Segment", segment)
             )
-            .interpolationMethod(.catmullRom)
+            // Keep interpolation bounded by the recorded values.
+            .interpolationMethod(.linear)
             .foregroundStyle(LinearGradient(colors: [tint.opacity(0.28), tint.opacity(0.02)], startPoint: .top, endPoint: .bottom))
             .accessibilityHidden(true)
             LineMark(x: .value("Day", point.day, unit: .day), y: .value(card.metric.unit, value), series: .value("Segment", segment))
-                .interpolationMethod(.catmullRom)
+                .interpolationMethod(.linear)
                 .foregroundStyle(tint)
                 .lineStyle(StrokeStyle(lineWidth: isFull ? 2.5 : 1.75, lineCap: .round, lineJoin: .round))
                 .accessibilityLabel(point.accessibilityLabel)
                 .accessibilityValue(point.accessibilityValue)
             if isFull && (!isDense || !dimmed && rawSelection != nil) {
                 PointMark(x: .value("Day", point.day, unit: .day), y: .value(card.metric.unit, value))
-                    .symbolSize(rawSelection != nil && !dimmed ? 90 : 28)
+                    // Use Charts' sized symbol rather than a flexible SwiftUI
+                    // Circle, which can expand to the plot's proposed size.
+                    .symbol(.circle)
+                    .symbolSize(rawSelection != nil && !dimmed ? 44 : 10)
                     .foregroundStyle(tint.opacity(point.isPartial ? 0.45 : 1))
-                    .symbol { Circle().fill(tint).overlay(Circle().stroke(.background, lineWidth: 2)) }
                     .accessibilityHidden(true)
             }
         } else {
