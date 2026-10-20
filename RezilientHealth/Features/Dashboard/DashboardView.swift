@@ -102,7 +102,7 @@ struct DashboardView: View {
             .navigationBarTitleDisplayMode(.inline)
             .refreshable { await viewModel.load() }
             .safeAreaInset(edge: .bottom) {
-                if !viewModel.isInitialLoading {
+                if !viewModel.isInitialLoading && !shouldShowConnectEmptyState {
                     if dynamicTypeSize.isAccessibilitySize {
                         Button { isAsking = true } label: {
                             Label("Ask", systemImage: "bubble.left.fill")

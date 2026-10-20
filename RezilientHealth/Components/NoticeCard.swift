@@ -31,23 +31,24 @@ extension NoticeCard where Actions == EmptyView {
 }
 
 /// A welcoming first-run state for members who have not connected Apple Health.
-/// The illustration is built from native symbols and shapes so it scales with
-/// Dynamic Type and does not add a raster asset to the dashboard bundle.
+/// Decorative artwork stays compact while the content follows Dynamic Type.
 struct ConnectHealthEmptyState: View {
     let connect: () -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         VStack(spacing: 24) {
-            HealthConnectionArtwork()
-                .frame(maxWidth: 300)
-                .frame(height: 226)
-                .accessibilityHidden(true)
+            if !dynamicTypeSize.isAccessibilitySize {
+                HealthConnectionArtwork()
+                    .accessibilityHidden(true)
+            }
 
             VStack(spacing: 10) {
                 Text("Your health story starts here")
-                    .font(.system(size: 31, weight: .bold, design: .rounded))
+                    .font(.system(.title, design: .rounded, weight: .bold))
                     .multilineTextAlignment(.center)
-                    .minimumScaleFactor(0.8)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityAddTraits(.isHeader)
 
                 Text("Connect Apple Health to see patterns in your steps, sleep, and resting heart rate.")
                     .font(.body)
@@ -60,21 +61,30 @@ struct ConnectHealthEmptyState: View {
             Button(action: connect) {
                 Label("Connect Apple Health", systemImage: "heart.text.square.fill")
                     .font(.body.weight(.semibold))
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, minHeight: 48)
             }
             .buttonStyle(.borderedProminent)
             .tint(.blue)
-            .clipShape(Capsule())
+            .buttonBorderShape(.capsule)
             .frame(maxWidth: 340)
 
-            Label("Your raw health data stays on this device.", systemImage: "lock.fill")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Image(systemName: "lock.fill")
+                    .accessibilityHidden(true)
+                Text("Your raw health data stays on this device.")
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: 300)
+            .accessibilityElement(children: .combine)
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: 380)
         .padding(.horizontal, 8)
-        .padding(.top, 34)
+        .frame(maxWidth: .infinity)
+        .padding(.top, 20)
         .padding(.bottom, 26)
     }
 }
@@ -83,45 +93,46 @@ private struct HealthConnectionArtwork: View {
     var body: some View {
         ZStack {
             Circle()
-                .stroke(
+                .strokeBorder(
                     AngularGradient(
-                        colors: [.mint, .blue.opacity(0.7), .indigo.opacity(0.55), .mint],
+                        colors: [.mint.opacity(0.5), .blue.opacity(0.45), .indigo.opacity(0.3), .mint.opacity(0.5)],
                         center: .center
                     ),
-                    style: StrokeStyle(lineWidth: 18, lineCap: .round)
+                    lineWidth: 7
                 )
-                .frame(width: 202, height: 202)
-                .rotationEffect(.degrees(-35))
-                .blur(radius: 0.2)
+                .frame(width: 148, height: 148)
 
             Circle()
-                .fill(.white.opacity(0.58))
-                .frame(width: 106, height: 106)
+                .fill(.pink.opacity(0.06))
+                .frame(width: 104, height: 104)
                 .overlay {
                     Image(systemName: "heart.fill")
-                        .font(.system(size: 42, weight: .semibold))
-                        .foregroundStyle(
-                            LinearGradient(colors: [.pink, .red], startPoint: .topLeading, endPoint: .bottomTrailing)
-                        )
+                        .font(.system(size: 38, weight: .semibold))
+                        .foregroundStyle(.pink)
                 }
-                .shadow(color: .pink.opacity(0.15), radius: 18, y: 8)
 
-            connectionBadge("figure.walk", tint: .mint, angle: -142)
-            connectionBadge("bed.double.fill", tint: .indigo, angle: -38)
-            connectionBadge("sparkles", tint: .blue, angle: 48)
+            connectionBadge("figure.walk", tint: .teal, angle: -145)
+            connectionBadge("bed.double.fill", tint: .indigo, angle: -35)
+            connectionBadge("sparkles", tint: .blue, angle: 55)
         }
-        .frame(width: 250, height: 220)
+        .frame(width: 244, height: 224)
     }
 
     private func connectionBadge(_ symbol: String, tint: Color, angle: Double) -> some View {
         Circle()
-            .fill(tint.opacity(0.13))
-            .frame(width: 70, height: 70)
+            .fill(.background)
+            .overlay {
+                Circle().fill(tint.opacity(0.09))
+            }
+            .overlay {
+                Circle().strokeBorder(tint.opacity(0.12), lineWidth: 1)
+            }
+            .frame(width: 48, height: 48)
             .overlay {
                 Image(systemName: symbol)
-                    .font(.system(size: 28, weight: .semibold))
+                    .font(.system(size: 21, weight: .medium))
                     .foregroundStyle(tint)
             }
-            .offset(x: 90 * cos(angle * .pi / 180), y: 90 * sin(angle * .pi / 180))
+            .offset(x: 102 * cos(angle * .pi / 180), y: 102 * sin(angle * .pi / 180))
     }
 }
