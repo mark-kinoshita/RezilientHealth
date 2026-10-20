@@ -79,4 +79,4 @@ For production, first validate the aggregation and insight rules against opted-i
 
 ## Demo
 
-The unedited walkthrough is planned for under three minutes. Use the seeded HealthKit story, show the summary and one metric detail, ask the step question, then show a simulated timeout with the question preserved. State clearly that the readings are synthetic and the timeout is simulated. The walkthrough notes are in `Evaluation/NOTES.md`.
+Watch the [unedited demo recording on Loom](https://www.loom.com/share/e806f48a2e96410e9e3194b615761786). It uses the seeded HealthKit story, shows the summary and metric detail, demonstrates the Ask flow, and walks through the unsupported-data and clinician boundaries. The readings are synthetic and are read through the app's HealthKit integration. The walkthrough notes are in `Evaluation/NOTES.md`.
